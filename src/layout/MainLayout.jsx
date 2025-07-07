@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet } from 'react-router'
 import Navber from '../page/shared/navbar/Navber'
-import Footer from '../page/footer/Footer'
+import Footer from '../page/shared/footer/Footer'
 const MainLayout = () => {
   return (
     <div>

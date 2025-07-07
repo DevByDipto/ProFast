@@ -1,5 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-router'
+import ProFirstLogo from '../proFirstLogo/ProFirstLogo'
 
 const Navber = () => {
   const navItems = <>
@@ -20,7 +21,7 @@ const Navber = () => {
         {navItems}
       </ul>
     </div>
-    <a className="btn btn-ghost text-xl">daisyUI</a>
+    <a className="btn btn-ghost text-xl"><ProFirstLogo></ProFirstLogo></a>
   </div>
   <div className="navbar-center hidden lg:flex">
     <ul className="menu menu-horizontal px-1">
