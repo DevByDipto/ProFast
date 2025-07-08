@@ -1,12 +1,18 @@
 import React from 'react'
 import { NavLink } from 'react-router'
 import ProFirstLogo from '../proFirstLogo/ProFirstLogo'
-
+import useAuth from '../../../hook/useAuth'
+import Logout from '../../authentication/logout/logout'
 const Navber = () => {
+  const {user} = useAuth()
   const navItems = <>
     <li><NavLink to='/'>Home</NavLink></li>
+    <li><NavLink to='/coverage'>Coverage</NavLink></li>
+    <li><NavLink to='/sendParcel'>Send a parcel</NavLink></li>
     <li><NavLink to='/about'>About Us</NavLink></li>
   </>
+
+
   
   return (
    <div className="navbar bg-base-100 shadow-sm">
@@ -21,7 +27,7 @@ const Navber = () => {
         {navItems}
       </ul>
     </div>
-    <a className="btn btn-ghost text-xl"><ProFirstLogo></ProFirstLogo></a>
+    <div className="btn btn-ghost text-xl"><ProFirstLogo></ProFirstLogo></div>
   </div>
   <div className="navbar-center hidden lg:flex">
     <ul className="menu menu-horizontal px-1">
@@ -29,7 +35,11 @@ const Navber = () => {
     </ul>
   </div>
   <div className="navbar-end">
-    <a className="btn">Button</a>
+{
+    user ? <Logout></Logout>:<NavLink className='btn btn-primary text-black' to='/login'>login</NavLink>
+    }
+    
+   
   </div>
 </div>
   )
