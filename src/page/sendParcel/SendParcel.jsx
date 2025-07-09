@@ -3,15 +3,16 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useLoaderData } from "react-router";
-import useAuth from '../../hook/useAuth'
+import useAuth from "../../hook/useAuth";
 import { v4 as uuidv4 } from "uuid";
+import useAxiosSecure from "../../hook/useAxiosSecure";
 
 const generateTrackingId = () => {
   return `TRK-${uuidv4()}`;
 };
 
-
 const ParcelForm = () => {
+  const axiosSecure = useAxiosSecure();
   const {
     register,
     handleSubmit,
@@ -21,25 +22,24 @@ const ParcelForm = () => {
 
   const [type, setType] = useState("document");
 
-//   const [serviceCenters, setServiceCenters] = useState([]);
+  //   const [serviceCenters, setServiceCenters] = useState([]);
   const [senderDistricts, setSenderDistricts] = useState([]);
   const [receiverDistricts, setReceiverDistricts] = useState([]);
-  const serviceCenters = useLoaderData()
- const {user} = useAuth()
+  const serviceCenters = useLoaderData();
+  const { user } = useAuth();
 
   // Extract unique regions
-  const uniqueRegions = [...new Set(serviceCenters.map(item => item.region))];
+  const uniqueRegions = [...new Set(serviceCenters.map((item) => item.region))];
 
-  
- const onSubmit = async (data) => {
-  const isWithinCity = data.sender_center === data.receiver_center;
+  const onSubmit = async (data) => {
+    const isWithinCity = data.sender_center === data.receiver_center;
 
-  // calculate cost
-  const cost = calculateCost(data, isWithinCity);
-  const tracking_id = generateTrackingId();
+    // calculate cost
+    const cost = calculateCost(data, isWithinCity);
+    const tracking_id = generateTrackingId();
 
-  // cost breakdown as list items with some spacing and font weight
-  const breakdownHtml = `
+    // cost breakdown as list items with some spacing and font weight
+    const breakdownHtml = `
     <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
       <li style="margin-bottom: 6px;">
         <strong>Parcel Type:</strong> ${data.type}
@@ -54,22 +54,31 @@ const ParcelForm = () => {
         <strong>To:</strong> ${data.receiver_center} (${data.receiver_region})
       </li>
       <li style="margin-top: 12px; font-weight: 600;">Cost Details:</li>
-      <li style="margin-left: 20px; margin-bottom: 4px;">${data.type === "document" ? 
-        (isWithinCity ? "Document Delivery (Within City): ৳60" : "Document Delivery (Outside City): ৳80") :
-        (parseFloat(data.weight || 0) <= 3 ?
-          (isWithinCity ? "Non-Document (Up to 3kg, Within City): ৳110" : "Non-Document (Up to 3kg, Outside City): ৳150") :
-          (isWithinCity ?
-            `Non-Document (>3kg, Within City): ৳110 base + ৳${((parseFloat(data.weight || 0) - 3) * 40).toFixed(2)} (extra)` :
-            `Non-Document (>3kg, Outside City): ৳150 base + ৳${((parseFloat(data.weight || 0) - 3) * 40).toFixed(2)} (extra) + ৳40 (extra charge)`
-          )
-        )
+      <li style="margin-left: 20px; margin-bottom: 4px;">${
+        data.type === "document"
+          ? isWithinCity
+            ? "Document Delivery (Within City): ৳60"
+            : "Document Delivery (Outside City): ৳80"
+          : parseFloat(data.weight || 0) <= 3
+          ? isWithinCity
+            ? "Non-Document (Up to 3kg, Within City): ৳110"
+            : "Non-Document (Up to 3kg, Outside City): ৳150"
+          : isWithinCity
+          ? `Non-Document (>3kg, Within City): ৳110 base + ৳${(
+              (parseFloat(data.weight || 0) - 3) *
+              40
+            ).toFixed(2)} (extra)`
+          : `Non-Document (>3kg, Outside City): ৳150 base + ৳${(
+              (parseFloat(data.weight || 0) - 3) *
+              40
+            ).toFixed(2)} (extra) + ৳40 (extra charge)`
       }</li>
     </ul>
   `;
 
-  const result = await Swal.fire({
-    title: "Confirm Your Parcel",
-    html: `
+    const result = await Swal.fire({
+      title: "Confirm Your Parcel",
+      html: `
       <div style="text-align: left; font-size: 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
         ${breakdownHtml}
         <p style="margin-top: 18px; font-size: 20px; font-weight: 700; color: #16a34a;">
@@ -77,57 +86,63 @@ const ParcelForm = () => {
         </p>
       </div>
     `,
-    icon: "info",
-    confirmButtonText: "✅ Confirm Booking",
-    cancelButtonText: "❌ Cancel",
-    showCancelButton: true,
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    focusConfirm: false,
-    confirmButtonColor: "#22c55e",
-    cancelButtonColor: "#ef4444",
-    width: 480,
-  });
+      icon: "info",
+      confirmButtonText: "✅ Confirm Booking",
+      cancelButtonText: "❌ Cancel",
+      showCancelButton: true,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      focusConfirm: false,
+      confirmButtonColor: "#22c55e",
+      cancelButtonColor: "#ef4444",
+      width: 480,
+    });
 
-  if (result.isConfirmed) {
-    const parcelInfo = {
-      ...data,
-      cost,
-      tracking_id,
-      creation_date: new Date().toISOString(),
-      created_by: user?.email,
-      payment_status: "unpid",
-      delivery_status:"not_collected",
-    };
+    if (result.isConfirmed) {
+      const parcelInfo = {
+        ...data,
+        cost,
+        tracking_id,
+        creation_date: new Date().toISOString(),
+        created_by: user?.email,
+        payment_status: "unpid",
+        delivery_status: "not_collected",
+      };
 
-    console.log("✅ Saved Parcel:", parcelInfo);
+      console.log("✅ Saved Parcel:", parcelInfo);
 
-//save data to the server
+      //save data to the server
+      axiosSecure.post("/parcels", parcelInfo).then((res) => {
+        if (res.data.insertedId) {
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "Your parcel is booked",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      });
 
-
-    toast.success("Parcel booked successfully!", { duration: 4000 });
-  } else {
-    toast("Booking Cancelled", { icon: "❌" });
-  }
-};
-
-
-
-
-const calculateCost = (data, isWithinCity) => {
-  if (data.type === "document") {
-    return isWithinCity ? 60 : 80;
-  } else {
-    const weight = parseFloat(data.weight || 0);
-    if (weight <= 3) {
-      return isWithinCity ? 110 : 150;
+      toast.success("Parcel booked successfully!", { duration: 4000 });
     } else {
-      const extra = (weight - 3) * 40;
-      return isWithinCity ? 110 + extra : 150 + extra + 40;
+      toast("Booking Cancelled", { icon: "❌" });
     }
-  }
-};
+  };
 
+  const calculateCost = (data, isWithinCity) => {
+    if (data.type === "document") {
+      return isWithinCity ? 60 : 80;
+    } else {
+      const weight = parseFloat(data.weight || 0);
+      if (weight <= 3) {
+        return isWithinCity ? 110 : 150;
+      } else {
+        const extra = (weight - 3) * 40;
+        return isWithinCity ? 110 + extra : 150 + extra + 40;
+      }
+    }
+  };
 
   return (
     <div className="bg-base-100 p-6 rounded-xl shadow-xl max-w-6xl mx-auto">

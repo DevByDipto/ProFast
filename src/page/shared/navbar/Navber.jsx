@@ -9,6 +9,11 @@ const Navber = () => {
     <li><NavLink to='/'>Home</NavLink></li>
     <li><NavLink to='/coverage'>Coverage</NavLink></li>
     <li><NavLink to='/sendParcel'>Send a parcel</NavLink></li>
+    {
+      user && <>
+          <li><NavLink to='/dashboard'>Deshboard</NavLink></li>
+      </>
+    }
     <li><NavLink to='/about'>About Us</NavLink></li>
   </>
 
