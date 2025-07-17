@@ -2,7 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { NavLink } from "react-router";
 import SocalLogin from "../socalLogin/SocalLogin";
-import useAuth from "../../../hook/useAuth";
+import useAuth from "../../../hooks/useAuth";
 
 const Login = () => {
   const {

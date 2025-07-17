@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useLoaderData } from "react-router";
-import useAuth from "../../hook/useAuth";
+import useAuth from "../../hooks/useAuth";
 import { v4 as uuidv4 } from "uuid";
-import useAxiosSecure from "../../hook/useAxiosSecure";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const generateTrackingId = () => {
   return `TRK-${uuidv4()}`;

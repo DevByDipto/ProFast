@@ -1,17 +1,52 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import useAuth from '../../../hook/useAuth'
+import useAuth from '../../../hooks/useAuth'
 import { NavLink } from 'react-router'
 import SocalLogin from '../socalLogin/SocalLogin'
+import axios from 'axios'
+import useAxios from '../../../hooks/useAxios'
 const Register = () => {
 const {register,handleSubmit,formState:{errors}} = useForm()
-const { createUser} = useAuth()
-const onSubmit=data=>{
-    console.log(data.email);
-    console.log(data.password);
+const { createUser,updateUserProfile} = useAuth()
+const axiosInstance = useAxios()
+const [profilePic,setProfilePic] = useState()
+
+
+const onSubmit=data=>{  
 createUser(data.email,data.password)
-.then((result)=>console.log(result.user))
-.catch((err)=>console.log(err))    
+.then(async(result)=>{
+  console.log('from create user',result.user)
+// update user in database
+const userInfo={
+  email: data.email,
+  role:'user' ,// default role
+  created_at: new Date().toISOString(),
+  last_log_in: new Date().toISOString()
+}
+
+const userRes = await axiosInstance.post("/user",userInfo)
+console.log("userinfo",userRes.data);
+
+
+  // update user is firebase
+updateUserProfile(data.name,profilePic)
+.then(()=>console.log('successfull'))
+.catch(err=>console.log(err))
+})
+.catch((err)=>console.log(err.message))    
+}
+
+const handleFileImageSubmite =async(e)=>{
+  const image = e.target.files[0]
+  const formData = new FormData()
+  formData.append('image', image)
+  console.log(formData);
+
+  const imageUploadUrl = `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMAGE_UPLOAD_KEY}`
+
+  const res = await axios.post(imageUploadUrl, formData)
+  setProfilePic(res.data.data.url);
+  
 }
 
   return (
@@ -24,6 +59,15 @@ createUser(data.email,data.password)
           <label className="label">Email</label>
           <input type="email" {...register("email",{required:true})} className="input" placeholder="Email" />
           {errors.email?.type === 'required' && <p className='text-red-500'>email must required</p>}
+
+            {/* name */}
+          <label className="Name">Name</label>
+          <input type="name" {...register("name",{required:true})} className="input" placeholder="name" />
+          {errors.email?.type === 'required' && <p className='text-red-500'>name must required</p>}
+
+{/* image file */}
+          <label className="file">File</label>
+<input onChange={handleFileImageSubmite} type="file" name='file' className="file-input file-input-primary" />
 
           {/* password */}
           <label className="label">Password</label>

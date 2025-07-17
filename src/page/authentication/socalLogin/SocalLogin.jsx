@@ -1,12 +1,24 @@
 import React from 'react'
-import useAuth from '../../../hook/useAuth'
+import useAuth from '../../../hooks/useAuth'
+import useAxios from '../../../hooks/useAxios'
 
 const SocalLogin = () => {
 const {signinWithGoogle} = useAuth()
+const axiosInstance = useAxios()
 
 const handleLoging=()=>{
 signinWithGoogle()
-.then((result)=>console.log(result.user))
+.then(async(result)=>{console.log(result.user)
+
+  const userInfo={
+  email: result.user.email,
+  role:'user' ,// default role
+  created_at: new Date().toISOString(),
+  last_log_in: new Date().toISOString()
+}
+const userRes = await axiosInstance.post("/user",userInfo)
+console.log("userinfo",userRes.data);
+})
 .catch((err)=>console.log(err)) 
 }
 
